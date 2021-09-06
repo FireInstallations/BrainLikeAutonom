@@ -89,15 +89,15 @@ void loop()
             if (PiekM < -3000 && PiekM > -11000) {
               
               //Serial.println("I-Blink detected!");
-              if ((millis() - piekTime) < 500)n++; else n = 1;
-              //Serial.print(PiekP);
-              //Serial.print("; ");
+              if ((millis() - piekTime) < 600)n++; else n = 1;
+              Serial.print(PiekP);
+              Serial.print("; ");
               
-              //Serial.println(PiekM);
-              //Serial.print("   n   ");
-              //Serial.println(n);
-              //Serial.print("   poorQuality    ");
-              //Serial.println(poorQuality);
+              Serial.println(PiekM);
+              Serial.print("   n   ");
+              Serial.println(n);
+              Serial.print("   poorQuality    ");
+              Serial.println(poorQuality);
               if(poorQuality == 0)digitalWrite(6,HIGH);else digitalWrite(6,LOW);
               piekTime = millis();
               piekDetected = true;
@@ -123,5 +123,5 @@ void loop()
     }
   }// end if 170 170 appeared
   //print n after a certain elapse time
-  if((millis()-piekTime)>600 && piekDetected == true)Serial.println(n),piekDetected = false;
+  if((millis()-piekTime)>700 && piekDetected == true)Serial.println(n),piekDetected = false;
 }// end of loop
