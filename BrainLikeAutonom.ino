@@ -77,7 +77,7 @@ void loop()
         PiekP += Data[(511 + i - 71) % 511];
         PiekP -= Data[(511 + i - 50 - 71) % 511];
         // Test, if PiekP exceeds a certain value and the youngest value of PiekP is negative and it has no huge values
-        if ((PiekP > 3000) && (Data[(511 - i + 1  - 70) % 511] < 0)/* && (PiekP < 13000)*/)
+        if ((PiekP > 3000) && (Data[(511 - i + 1  - 70) % 511] < 0) && (PiekP < 13000))
         { // The next eye blink detection is enabled only after a certain elapse time
           if (millis() - piekTime > 100) //time
           { PiekM = 0;
@@ -86,14 +86,16 @@ void loop()
               PiekM +=  (int)(Data[(511 + i  + 1 + j - 71) % 511]);
 
             //Sometimes big negative numbers appear, which are suppressed by a limit for the negative values, if they are to huge
-            if (PiekM < -3000/* && PiekM > -11000*/) {
+            if (PiekM < -3000 && PiekM > -11000) {
+              
               //Serial.println("I-Blink detected!");
               if ((millis() - piekTime) < 500)n++; else n = 1;
-              //Serial.print(PiekP);
-              //Serial.print("; ");
-              //Serial.println(PiekM);
-              //Serial.print("   n   ");
-              Serial.print(n);
+              Serial.print(PiekP);
+              Serial.print("; ");
+              
+              Serial.println(PiekM);
+              Serial.print("   n   ");
+              Serial.println(n);
               //Serial.print("   poorQuality    ");
               //Serial.println(poorQuality);
               if(poorQuality == 0)digitalWrite(6,HIGH);else digitalWrite(6,LOW);
