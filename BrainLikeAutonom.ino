@@ -13,7 +13,7 @@
 //Servo servoblau;
 SoftwareSerial BTSerial(10, 11); // RX | TX
 
-boolean DEBUGOUTPUT  = false;
+boolean DEBUGOUTPUT  = false,piekDetected = false;
 int Data[512] = {0};
 int i = 0, n = 0;
 int PiekP, PiekM;
@@ -79,9 +79,9 @@ void loop()
         // Test, if PiekP exceeds a certain value and the youngest value of PiekP is negative and it has no huge values
         if ((PiekP > 3000) && (Data[(511 - i + 1  - 70) % 511] < 0) && (PiekP < 13000))
         { // The next eye blink detection is enabled only after a certain elapse time
-          if (millis() - piekTime > 100) //time
+          if (millis() - piekTime > 50) //time
           { PiekM = 0;
-            // After detecting a positive peak PiekP the following 70 values are summed up and tested, if smaller than a certain value
+            // After detecting a positive peak PiekP the following 70 values are summed up and tested, if more negative than a certain value
             for (int j = 1; j <= 70; j++)
               PiekM +=  (int)(Data[(511 + i  + 1 + j - 71) % 511]);
 
@@ -90,23 +90,20 @@ void loop()
               
               //Serial.println("I-Blink detected!");
               if ((millis() - piekTime) < 500)n++; else n = 1;
-              Serial.print(PiekP);
-              Serial.print("; ");
+              //Serial.print(PiekP);
+              //Serial.print("; ");
               
-              Serial.println(PiekM);
-              Serial.print("   n   ");
-              Serial.println(n);
+              //Serial.println(PiekM);
+              //Serial.print("   n   ");
+              //Serial.println(n);
               //Serial.print("   poorQuality    ");
               //Serial.println(poorQuality);
               if(poorQuality == 0)digitalWrite(6,HIGH);else digitalWrite(6,LOW);
-              if(n==1)digitalWrite(4,HIGH),digitalWrite(3,LOW),digitalWrite(5,LOW);
-              if(n==2)digitalWrite(5,HIGH),digitalWrite(3,LOW),digitalWrite(4,LOW);
-              if(n>2)digitalWrite(3,HIGH),digitalWrite(4,LOW),digitalWrite(5,LOW);
-
               piekTime = millis();
-            }
-          }
-        }
+              piekDetected = true;
+            }// end if PiekM (eyeblink detected)
+          }//end elapse time
+        }// end PiekP detect
         i++;
         // The Data Array can be printed out if DEBUGOUTPUT is set true
         if (DEBUGOUTPUT && i == 512)
@@ -125,4 +122,6 @@ void loop()
       if(ReadOneByte()== 2)poorQuality = ReadOneByte();
     }
   }// end if 170 170 appeared
+  //print n after a certain elapse time
+  if((millis()-piekTime)>600 && piekDetected == true)Serial.println(n),piekDetected = false;
 }// end of loop
