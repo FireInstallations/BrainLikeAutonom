@@ -31,8 +31,8 @@ void setup()
   //servoblau.attach(2);  //the servo is attached to Pin2
   Serial.begin(57600);
   BTSerial.begin(BAUDRATE);           // Baudrate Headset is 57600
-  pinMode(3,OUTPUT),pinMode(4,OUTPUT),pinMode(5,OUTPUT),pinMode(6,OUTPUT);//set indicator LEDs
-  digitalWrite(3,LOW),digitalWrite(4,LOW),digitalWrite(5,LOW),digitalWrite(6,LOW);  
+  pinMode(6,OUTPUT); // LED which indicates, that por quality is zero
+    
 }
 
 ////////////////////////////////
@@ -59,20 +59,20 @@ void loop()
   if (i >= 512)
     i = 0;
 
-  if (ReadOneByte() == 170 && ReadOneByte() == 170)
+  if (ReadOneByte() == 170 && ReadOneByte() == 170)// this is the beginning of each new sequence
   {
     payloadLength = ReadOneByte();
-    if (payloadLength == 4)
+    if (payloadLength == 4)// the raw data have a payloadlength of 4, the esense values have another payloadlength < 170 bytes
     {
-      if (ReadOneByte() == 128 && ReadOneByte() == 2)
+      if (ReadOneByte() == 128 && ReadOneByte() == 2)// the sequence announcing raw data is 170 170 4 128 2
       {
 
-        Hilf =  ((long)ReadOneByte() * 256 + (long)ReadOneByte());
+        Hilf =  ((long)ReadOneByte() * 256 + (long)ReadOneByte());// read the most significant two bytes and form a signed number of it
         if (Hilf > 32767)
           Hilf -= (long)(65535);
         Data[i] = (int)Hilf;
 
-        ReadOneByte(); // leer
+        ReadOneByte(); // read the third byte, without taking notice of it
         // PiekP is a gliding sum over 50 values of Data 71 values of Data in the past, 71 values are reserved for the minus peak PiekM
         PiekP += Data[(511 + i - 71) % 511];
         PiekP -= Data[(511 + i - 50 - 71) % 511];
@@ -89,18 +89,19 @@ void loop()
             if (PiekM < -3000 && PiekM > -11000) {
               
               //Serial.println("I-Blink detected!");
+              // n is the counter for the number of subsequent eye blinks within a certain time difference
               if ((millis() - piekTime) < 600)n++; else n = 1;
-              Serial.print(PiekP);
-              Serial.print("; ");
+              //Serial.print(PiekP);
+              //Serial.print("; ");
               
-              Serial.println(PiekM);
-              Serial.print("   n   ");
-              Serial.println(n);
-              Serial.print("   poorQuality    ");
-              Serial.println(poorQuality);
+              //Serial.println(PiekM);
+              //Serial.print("   n   ");
+              //Serial.println(n);
+              //Serial.print("   poorQuality    ");
+              //Serial.println(poorQuality);
               if(poorQuality == 0)digitalWrite(6,HIGH);else digitalWrite(6,LOW);
-              piekTime = millis();
-              piekDetected = true;
+              piekTime = millis();//piekTime is the time at which the eye blink has been detected
+              piekDetected = true;// piekDetected is set true, when an eye blink has been detected
             }// end if PiekM (eyeblink detected)
           }//end elapse time
         }// end PiekP detect
@@ -117,11 +118,11 @@ void loop()
         }// end debug output
       }// end if 128 and 2 found
     }// end if payloadLength == 4
-    else if(payloadLength < 170){
+    else if(payloadLength < 170){// this is the access to the esense values, here poor quality, which is announced by a byte with value 2
       for (int k = 1; k < payloadLength; k++)
       if(ReadOneByte()== 2)poorQuality = ReadOneByte();
     }
   }// end if 170 170 appeared
-  //print n after a certain elapse time
+  //print n after a certain elapse time, peakDetected has the purpose, that the printing happens only once after the last eye blink
   if((millis()-piekTime)>700 && piekDetected == true)Serial.println(n),piekDetected = false;
 }// end of loop
