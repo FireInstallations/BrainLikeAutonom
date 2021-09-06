@@ -74,16 +74,16 @@ void loop()
 
         ReadOneByte(); // read the third byte, without taking notice of it
         // PiekP is a gliding sum over 50 values of Data 71 values of Data in the past, 71 values are reserved for the minus peak PiekM
-        PiekP += Data[(511 + i - 71) % 511];
-        PiekP -= Data[(511 + i - 50 - 71) % 511];
+        PiekP += Data[(512 + i - 71) % 512];
+        PiekP -= Data[(512 + i - 50 - 71) % 512];
         // Test, if PiekP exceeds a certain value and the youngest value of PiekP is negative and it has no huge values
-        if ((PiekP > 3000) && (Data[(511 - i + 1  - 70) % 511] < 0) && (PiekP < 13000))
+        if ((PiekP > 3000) && (Data[(512 + i  - 70) % 512] < 0) && (PiekP < 13000))
         { // The next eye blink detection is enabled only after a certain elapse time
-          if (millis() - piekTime > 50) //time
+          if (millis() - piekTime > 100) //time
           { PiekM = 0;
             // After detecting a positive peak PiekP the following 70 values are summed up and tested, if more negative than a certain value
             for (int j = 1; j <= 70; j++)
-              PiekM +=  (int)(Data[(511 + i  + 1 + j - 71) % 511]);
+              PiekM +=  (int)(Data[(512 + i  + j - 70) % 512]);
 
             //Sometimes big negative numbers appear, which are suppressed by a limit for the negative values, if they are to huge
             if (PiekM < -3000 && PiekM > -11000) {
@@ -105,7 +105,7 @@ void loop()
             }// end if PiekM (eyeblink detected)
           }//end elapse time
         }// end PiekP detect
-        i++;
+        i++;// move one raw value forward
         // The Data Array can be printed out if DEBUGOUTPUT is set true
         if (DEBUGOUTPUT && i == 512)
         {
